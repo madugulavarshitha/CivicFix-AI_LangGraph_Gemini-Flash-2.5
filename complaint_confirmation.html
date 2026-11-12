@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}Complaint Submitted — CivicFix AI{% endblock %}
+
+{% block content %}
+<div style="max-width: 580px; margin: 30px auto; text-align: center;">
+  <div class="card" style="padding: 36px 28px;">
+    <!-- Checkmark Icon -->
+    <div style="width: 56px; height: 56px; border-radius: 50%; background-color: var(--pastel-mint); color: #065F46; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>
+
+    <h1 style="font-size: 1.4rem; font-weight: 800; color: var(--primary-text);">
+      Complaint Successfully Registered!
+    </h1>
+    <p style="font-size: 0.82rem; color: var(--secondary-text); margin-top: 6px;">
+      Your report has been saved to the municipal database and processed by our LangGraph AI multi-agent workflow.
+    </p>
+
+    <!-- Details Box -->
+    <div style="background-color: #F8FAFC; border: 1px solid var(--border-color); border-radius: 14px; padding: 18px; margin: 24px 0; text-align: left;">
+      <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 10px; border-bottom: 1px solid var(--border-color);">
+        <span style="font-size: 0.78rem; color: var(--secondary-text);">Complaint Reference ID</span>
+        <strong style="font-size: 0.95rem; color: var(--primary-btn);">{{ complaint.reference_number }}</strong>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border-color);">
+        <span style="font-size: 0.78rem; color: var(--secondary-text);">Classified Category</span>
+        <strong style="font-size: 0.85rem; color: var(--primary-text);">{{ complaint.category }}</strong>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border-color);">
+        <span style="font-size: 0.78rem; color: var(--secondary-text);">Assigned Department</span>
+        <strong style="font-size: 0.85rem; color: var(--primary-text);">
+          {% if complaint.assigned_department %}{{ complaint.assigned_department.name }}{% else %}Municipal Operations{% endif %}
+        </strong>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border-color);">
+        <span style="font-size: 0.78rem; color: var(--secondary-text);">Assessed Priority</span>
+        <div>
+          {% if complaint.priority == 'Critical' %}
+            <span class="badge badge-critical">Critical (12h SLA)</span>
+          {% elif complaint.priority == 'High' %}
+            <span class="badge badge-high">High (24h SLA)</span>
+          {% elif complaint.priority == 'Medium' %}
+            <span class="badge badge-medium">Medium (48h SLA)</span>
+          {% else %}
+            <span class="badge badge-low">Low (72h SLA)</span>
+          {% endif %}
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 10px;">
+        <span style="font-size: 0.78rem; color: var(--secondary-text);">Current Lifecycle Status</span>
+        <span class="badge badge-{{ complaint.status|lower|replace(' ', '-') }}">{{ complaint.status }}</span>
+      </div>
+    </div>
+
+    {% if complaint.is_potential_duplicate %}
+    <div class="alert alert-warning" style="text-align: left; margin-bottom: 20px;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      <div>
+        <strong>Potential Duplicate Detected:</strong> Our Duplicate Detector identified matching incidents nearby. An officer will inspect and consolidate if applicable.
+      </div>
+    </div>
+    {% endif %}
+
+    <div style="display: flex; justify-content: center; gap: 12px;">
+      <a href="/complaints/{{ complaint.id }}" class="btn btn-primary">
+        Track Complaint Progress
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </a>
+      <a href="/citizen/dashboard" class="btn btn-outline">
+        Go to Dashboard
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}

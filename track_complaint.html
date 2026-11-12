@@ -1,0 +1,285 @@
+{% extends "base.html" %}
+
+{% block title %}Track {{ complaint.reference_number }} — CivicFix AI{% endblock %}
+
+{% block content %}
+<div style="max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px;">
+  <!-- Back navigation & badges -->
+  <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+    <a href="{% if user.role in ['admin', 'officer'] %}/admin/complaints{% else %}/complaints{% endif %}" style="display: flex; align-items: center; gap: 6px; font-size: 0.82rem; font-weight: 600; color: var(--secondary-text);">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+      Back to Complaints
+    </a>
+    <div style="display: flex; gap: 8px;">
+      {% if complaint.priority == 'Critical' %}
+        <span class="badge badge-critical">Critical Priority</span>
+      {% elif complaint.priority == 'High' %}
+        <span class="badge badge-high">High Priority</span>
+      {% elif complaint.priority == 'Medium' %}
+        <span class="badge badge-medium">Medium Priority</span>
+      {% else %}
+        <span class="badge badge-low">Low Priority</span>
+      {% endif %}
+
+      <span class="badge badge-{{ complaint.status|lower|replace(' ', '-') }}">{{ complaint.status }}</span>
+    </div>
+  </div>
+
+  <!-- Main Card -->
+  <div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 14px; padding-bottom: 16px; border-bottom: 1px solid var(--border-color);">
+      <div>
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+          <span style="font-weight: 800; font-size: 0.95rem; color: var(--primary-btn); background-color: #F0F7FF; padding: 2px 8px; border-radius: 6px; border: 1px solid var(--pastel-blue);">
+            {{ complaint.reference_number }}
+          </span>
+          <span style="font-size: 0.75rem; color: var(--secondary-text);">
+            Submitted {{ complaint.created_at.strftime('%b %d, %Y at %I:%M %p') }}
+          </span>
+        </div>
+        <h1 style="font-size: 1.35rem; font-weight: 800; color: var(--primary-text);">
+          {{ complaint.title }}
+        </h1>
+        <p style="font-size: 0.78rem; color: var(--secondary-text); margin-top: 4px; display: flex; align-items: center; gap: 4px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          {{ complaint.location }} {% if complaint.landmark %}(Near {{ complaint.landmark }}){% endif %}
+        </p>
+      </div>
+
+      {% if complaint.status in ['Resolved', 'Verified', 'Closed'] %}
+      <div>
+        <!-- Reopen form -->
+        <details style="position: relative;">
+          <summary class="btn btn-warning btn-sm" style="list-style: none; cursor: pointer;">
+            Reopen Issue
+          </summary>
+          <div style="position: absolute; right: 0; top: 38px; width: 320px; background: #FFFFFF; border: 1px solid var(--border-color); border-radius: 12px; padding: 14px; box-shadow: var(--shadow-hover); z-index: 50;">
+            <form action="/complaints/{{ complaint.id }}/reopen" method="POST">
+              <label class="form-label" style="font-size: 0.75rem;">Explain Reopen Reason:</label>
+              <textarea name="reopen_reason" class="form-control" placeholder="Why is the resolution unsatisfactory?..." required minlength="10" style="font-size: 0.75rem; min-height: 60px;"></textarea>
+              <div style="display: flex; justify-content: flex-end; gap: 6px; margin-top: 8px;">
+                <button type="submit" class="btn btn-warning btn-sm" style="font-size: 0.72rem;">Confirm Reopen</button>
+              </div>
+            </form>
+          </div>
+        </details>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Pure CSS Lifecycle Status Timeline -->
+    <div style="background-color: #F8FAFC; border: 1px solid var(--border-color); border-radius: 14px; padding: 16px; margin: 18px 0;">
+      <div style="font-size: 0.72rem; font-weight: 700; text-transform: uppercase; color: var(--secondary-text); margin-bottom: 12px; letter-spacing: 0.5px;">
+        Complaint Status Timeline
+      </div>
+
+      {% if complaint.status == 'Rejected' %}
+        <div class="alert alert-error" style="margin-bottom: 0;">
+          <strong>Complaint Rejected:</strong> This report was reviewed and marked as rejected by municipal officers.
+          {% if complaint.rejection_reason %}<br>Reason: {{ complaint.rejection_reason }}{% endif %}
+        </div>
+      {% elif complaint.status == 'Reopened' %}
+        <div class="alert alert-warning" style="margin-bottom: 0;">
+          <strong>Complaint Reopened:</strong> Citizen indicated the resolution was unsatisfactory. Queued for follow-up inspection.
+          {% if complaint.reopen_reason %}<br>Citizen note: {{ complaint.reopen_reason }}{% endif %}
+        </div>
+      {% else %}
+        <!-- Standard Steps: Submitted -> AI Analysis -> Assigned -> In Progress -> Resolved -> Verified -> Closed -->
+        {% set steps = ['Submitted', 'AI Analysis', 'Assigned', 'In Progress', 'Resolved', 'Verified', 'Closed'] %}
+        {% set current_idx = steps.index(complaint.status) if complaint.status in steps else 0 %}
+
+        <div class="timeline-wrapper">
+          <div class="timeline-steps">
+            <div class="timeline-connector"></div>
+            {% for s in steps %}
+              {% set idx = loop.index0 %}
+              <div class="timeline-step {% if current_idx > idx %}completed{% elif current_idx == idx %}current{% endif %}">
+                <div class="timeline-dot">
+                  {% if current_idx > idx %}
+                    ✓
+                  {% else %}
+                    {{ loop.index }}
+                  {% endif %}
+                </div>
+                <div class="timeline-title">{{ s }}</div>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Description -->
+    <div style="margin-bottom: 20px;">
+      <h3 style="font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: var(--primary-text); margin-bottom: 8px;">
+        Issue Description
+      </h3>
+      <div style="background-color: #F8FAFC; border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; font-size: 0.82rem; line-height: 1.6; white-space: pre-wrap;">{{ complaint.description }}</div>
+    </div>
+
+    <!-- Photo Attachments -->
+    {% if complaint.attachments and complaint.attachments|length > 0 %}
+    <div style="margin-bottom: 20px;">
+      <h3 style="font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: var(--primary-text); margin-bottom: 8px;">
+        Submitted Photographs
+      </h3>
+      <div style="display: flex; flex-wrap: wrap; gap: 12px;">
+        {% for att in complaint.attachments %}
+          <div style="border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; width: 180px;">
+            <img src="{{ att.file_path }}" alt="{{ att.file_name }}" style="width: 100%; height: 120px; object-fit: cover;">
+            <div style="padding: 6px 10px; font-size: 0.68rem; color: var(--secondary-text); background: #F8FAFC; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+              {{ att.file_name }}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- AI Analysis Card -->
+    <div style="background: linear-gradient(135deg, rgba(184, 216, 248, 0.2), #FFFFFF); border: 1px solid var(--pastel-blue); border-radius: 14px; padding: 16px; margin-bottom: 20px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+        <div style="display: flex; align-items: center; gap: 6px; font-weight: 700; font-size: 0.85rem; color: var(--primary-text);">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary-btn)" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          Multi-Agent AI Triage Analysis
+        </div>
+        {% if complaint.classification_confidence %}
+          <span style="font-size: 0.72rem; font-weight: 700; color: #1E40AF; background-color: var(--pastel-blue); padding: 2px 8px; border-radius: 9999px;">
+            {{ (complaint.classification_confidence * 100)|round }}% Confidence
+          </span>
+        {% endif %}
+      </div>
+
+      <p style="font-size: 0.8rem; color: var(--primary-text); line-height: 1.5;">
+        {{ complaint.ai_summary or "AI analysis completed. Routing parameters verified." }}
+      </p>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(231, 236, 242, 0.8); font-size: 0.75rem;">
+        <div>
+          <span style="color: var(--secondary-text);">Category:</span>
+          <strong>{{ complaint.category }}</strong>
+        </div>
+        <div>
+          <span style="color: var(--secondary-text);">Department:</span>
+          <strong>{% if complaint.assigned_department %}{{ complaint.assigned_department.name }}{% else %}Pending{% endif %}</strong>
+        </div>
+        <div>
+          <span style="color: var(--secondary-text);">Target Deadline:</span>
+          <strong>{% if complaint.expected_resolution_at %}{{ complaint.expected_resolution_at.strftime('%b %d, %Y at %I:%M %p') }}{% else %}N/A{% endif %}</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- Potential Duplicate Alert -->
+    {% if complaint.duplicate_candidates and complaint.duplicate_candidates|length > 0 %}
+    <div style="background-color: #FFFBEB; border: 1px solid #FDE68A; border-radius: 14px; padding: 16px; margin-bottom: 20px;">
+      <div style="display: flex; align-items: center; gap: 6px; font-weight: 700; font-size: 0.82rem; color: #92400E; margin-bottom: 6px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        Potential Duplicate Issues Detected
+      </div>
+      <p style="font-size: 0.75rem; color: #92400E; line-height: 1.4; margin-bottom: 10px;">
+        Our Duplicate Detector identified matching incidents submitted in this vicinity:
+      </p>
+      {% for cand in complaint.duplicate_candidates %}
+        <div style="background: #FFFFFF; border: 1px solid #FDE68A; border-radius: 8px; padding: 10px 14px; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <strong style="font-size: 0.8rem; color: var(--primary-btn);">CF-Candidate #{{ cand.candidate_complaint_id }}</strong>
+            <p style="font-size: 0.72rem; color: #92400E; margin-top: 2px;">{{ cand.match_reason }}</p>
+          </div>
+          <span class="badge badge-warning" style="font-size: 0.7rem;">
+            {{ (cand.similarity_score * 100)|round }}% Match
+          </span>
+        </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Field Resolution Evidence (if present) -->
+    {% if complaint.resolution_evidence %}
+    <div style="background-color: #E6F8F0; border: 1px solid var(--pastel-mint); border-radius: 14px; padding: 16px; margin-bottom: 20px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+        <div style="display: flex; align-items: center; gap: 6px; font-weight: 700; font-size: 0.85rem; color: #065F46;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          Field Resolution Evidence
+        </div>
+        {% if complaint.resolution_verifications and complaint.resolution_verifications|length > 0 %}
+          <span class="badge badge-verified">
+            AI Verified: {{ complaint.resolution_verifications[0].outcome }}
+          </span>
+        {% endif %}
+      </div>
+
+      <p style="font-size: 0.8rem; color: var(--primary-text); line-height: 1.5; white-space: pre-wrap;">
+        <strong>Officer Completion Notes:</strong> {{ complaint.resolution_evidence.completion_notes }}
+      </p>
+
+      {% if complaint.resolution_evidence.photo_url %}
+        <div style="margin-top: 10px;">
+          <a href="{{ complaint.resolution_evidence.photo_url }}" target="_blank" style="font-size: 0.75rem; font-weight: 600; color: #065F46;">
+            View Resolution Photo Proof →
+          </a>
+        </div>
+      {% endif %}
+
+      {% if complaint.resolution_verifications and complaint.resolution_verifications|length > 0 %}
+      <div style="background: #FFFFFF; border: 1px solid var(--pastel-mint); border-radius: 8px; padding: 10px; margin-top: 10px; font-size: 0.75rem;">
+        <strong>Agent 5 (Resolution Verifier) Checklist Summary:</strong>
+        <p style="color: var(--secondary-text); margin-top: 2px;">{{ complaint.resolution_verifications[0].verification_summary }}</p>
+      </div>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Comments & Updates Conversation Section -->
+    <div style="border-top: 1px solid var(--border-color); padding-top: 20px;">
+      <h3 style="font-size: 0.82rem; font-weight: 700; text-transform: uppercase; color: var(--primary-text); margin-bottom: 14px;">
+        Updates & Discussion ({{ complaint.comments|length }})
+      </h3>
+
+      <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px;">
+        {% if complaint.comments and complaint.comments|length > 0 %}
+          {% for cm in complaint.comments %}
+            {% if not cm.is_internal or user.role in ['admin', 'officer'] %}
+            <div style="padding: 12px; border-radius: 10px; border: 1px solid {% if cm.is_internal %}#FDE68A; background-color: #FFFBEB;{% else %}var(--border-color); background-color: #F8FAFC;{% endif %} font-size: 0.8rem;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <strong style="color: var(--primary-text);">
+                  {{ cm.user.full_name }}
+                  {% if cm.is_internal %}
+                    <span style="font-size: 0.65rem; background: #FDE68A; color: #92400E; padding: 1px 6px; border-radius: 4px; margin-left: 4px;">Internal Officer Note</span>
+                  {% endif %}
+                </strong>
+                <span style="font-size: 0.68rem; color: var(--secondary-text);">{{ cm.created_at.strftime('%b %d at %I:%M %p') }}</span>
+              </div>
+              <p style="color: var(--primary-text); line-height: 1.4; white-space: pre-wrap;">{{ cm.comment_text }}</p>
+            </div>
+            {% endif %}
+          {% endfor %}
+        {% else %}
+          <p style="font-size: 0.78rem; color: var(--secondary-text); font-style: italic;">No comments posted yet.</p>
+        {% endif %}
+      </div>
+
+      <!-- Add Comment Form -->
+      <form action="/complaints/{{ complaint.id }}/comments" method="POST">
+        <div class="form-group" style="margin-bottom: 10px;">
+          <textarea name="comment_text" class="form-control" placeholder="Post a comment, update, or additional details..." required minlength="2" style="min-height: 60px; font-size: 0.8rem;"></textarea>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          {% if user.role in ['admin', 'officer'] %}
+            <label style="display: flex; align-items: center; gap: 6px; font-size: 0.75rem; color: var(--secondary-text); cursor: pointer;">
+              <input type="checkbox" name="is_internal" value="true">
+              Mark as internal officer note
+            </label>
+          {% else %}
+            <div></div>
+          {% endif %}
+          <button type="submit" class="btn btn-primary btn-sm">
+            Post Update
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

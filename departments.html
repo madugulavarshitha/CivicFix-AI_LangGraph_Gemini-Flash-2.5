@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}Department & SLA Oversight — CivicFix AI{% endblock %}
+
+{% block content %}
+<div style="display: flex; flex-direction: column; gap: 20px;">
+  <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
+    <div>
+      <span style="font-size: 0.72rem; font-weight: 700; color: var(--primary-btn); text-transform: uppercase; letter-spacing: 0.5px;">
+        Municipal Administration
+      </span>
+      <h1 style="font-size: 1.6rem; font-weight: 800; color: var(--primary-text); margin-top: 4px;">
+        Departments & SLA Targets
+      </h1>
+      <p style="font-size: 0.8rem; color: var(--secondary-text); margin-top: 4px;">
+        Configure municipal departments, dispatch routing rules, and response deadline commitments.
+      </p>
+    </div>
+  </div>
+
+  {% if message %}
+    <div class="alert alert-success">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+      <span>{{ message }}</span>
+    </div>
+  {% endif %}
+
+  <!-- Departments Grid -->
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 18px;">
+    {% for dept in departments %}
+    <div class="card" style="margin-bottom: 0; display: flex; flex-direction: column; justify-content: space-between;">
+      <div>
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+          <div>
+            <h3 style="font-size: 1rem; font-weight: 700; color: var(--primary-text);">
+              {{ dept.name }}
+            </h3>
+            <span style="font-size: 0.7rem; font-weight: 800; color: var(--secondary-text); letter-spacing: 0.5px;">
+              {{ dept.code }}
+            </span>
+          </div>
+          <span class="badge" style="background-color: var(--pastel-blue); color: #1E40AF; font-weight: 700;">
+            {{ dept.sla_hours }}h SLA
+          </span>
+        </div>
+
+        <p style="font-size: 0.78rem; color: var(--secondary-text); line-height: 1.5; margin-top: 6px;">
+          {{ dept.description }}
+        </p>
+
+        <div style="margin-top: 10px; font-size: 0.75rem; color: var(--primary-text);">
+          <strong style="color: var(--secondary-text);">Contact:</strong> {{ dept.contact_email }}
+        </div>
+      </div>
+
+      <!-- Caseload Metrics & SLA update form -->
+      <div style="margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border-color);">
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; text-align: center; margin-bottom: 12px;">
+          <div style="background-color: #F8FAFC; padding: 6px; border-radius: 8px;">
+            <span style="font-size: 0.65rem; color: var(--secondary-text); display: block;">Assigned</span>
+            <strong style="font-size: 0.85rem; color: var(--primary-text);">{{ dept.total_assigned }}</strong>
+          </div>
+          <div style="background-color: #FFFBEB; padding: 6px; border-radius: 8px;">
+            <span style="font-size: 0.65rem; color: #92400E; display: block;">Pending</span>
+            <strong style="font-size: 0.85rem; color: #92400E;">{{ dept.pending_workload }}</strong>
+          </div>
+          <div style="background-color: #E6F8F0; padding: 6px; border-radius: 8px;">
+            <span style="font-size: 0.65rem; color: #065F46; display: block;">Resolved</span>
+            <strong style="font-size: 0.85rem; color: #065F46;">{{ dept.resolved_cases }}</strong>
+          </div>
+        </div>
+
+        {% if user.role == 'admin' %}
+        <!-- Update SLA Form (Pure HTML POST form) -->
+        <details style="margin-top: 10px;">
+          <summary style="font-size: 0.75rem; font-weight: 600; color: var(--primary-btn); cursor: pointer;">
+            ⚙️ Configure SLA & Contact
+          </summary>
+          <form action="/admin/departments/{{ dept.id }}/update" method="POST" style="margin-top: 10px; padding: 12px; background: #F8FAFC; border-radius: 10px; border: 1px solid var(--border-color);">
+            <div class="form-group" style="margin-bottom: 8px;">
+              <label class="form-label" style="font-size: 0.7rem;">Target SLA (Hours):</label>
+              <input type="number" name="sla_hours" value="{{ dept.sla_hours }}" min="6" max="168" class="form-control" style="font-size: 0.75rem; padding: 6px;">
+            </div>
+            <div class="form-group" style="margin-bottom: 8px;">
+              <label class="form-label" style="font-size: 0.7rem;">Official Contact Email:</label>
+              <input type="email" name="contact_email" value="{{ dept.contact_email }}" class="form-control" style="font-size: 0.75rem; padding: 6px;">
+            </div>
+            <button type="submit" class="btn btn-primary btn-sm" style="width: 100%; font-size: 0.72rem;">
+              Save Department Changes
+            </button>
+          </form>
+        </details>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

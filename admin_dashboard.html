@@ -1,0 +1,212 @@
+{% extends "base.html" %}
+
+{% block title %}Operations Dashboard — CivicFix AI{% endblock %}
+
+{% block content %}
+<div style="display: flex; flex-direction: column; gap: 24px;">
+  <!-- Header -->
+  <div class="card" style="background: linear-gradient(135deg, #FFFFFF, #F8FAFC 60%, rgba(184, 216, 248, 0.25)); display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 16px;">
+    <div>
+      <span style="font-size: 0.72rem; font-weight: 700; color: var(--primary-btn); text-transform: uppercase; letter-spacing: 0.5px;">
+        Municipal Operations Control Center
+      </span>
+      <h1 style="font-size: 1.6rem; font-weight: 800; color: var(--primary-text); margin-top: 4px;">
+        City Operations Command Center
+      </h1>
+      <p style="font-size: 0.8rem; color: var(--secondary-text); margin-top: 4px; max-width: 620px;">
+        Autonomous multi-agent intake, duplicate detection, and departmental SLA monitoring.
+      </p>
+    </div>
+    <div style="display: flex; gap: 10px;">
+      <a href="/admin/complaints" class="btn btn-primary" style="padding: 10px 18px; font-size: 0.85rem;">
+        Manage All Complaints
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </a>
+    </div>
+  </div>
+
+  <!-- KPI Metrics Grid -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div>
+        <div class="stat-label">Total Complaints</div>
+        <div class="stat-value">{{ total_count }}</div>
+        <div class="stat-subtext">All registered grievances</div>
+      </div>
+      <div class="stat-icon-wrapper blue">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div>
+        <div class="stat-label">High / Critical</div>
+        <div class="stat-value">{{ high_priority_count }}</div>
+        <div class="stat-subtext">Urgent safety attention</div>
+      </div>
+      <div class="stat-icon-wrapper peach">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div>
+        <div class="stat-label">Resolution Rate</div>
+        <div class="stat-value">{{ resolution_rate }}%</div>
+        <div class="stat-subtext">Avg {{ avg_resolution_hours }} hrs to resolve</div>
+      </div>
+      <div class="stat-icon-wrapper mint">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div>
+        <div class="stat-label">Unassigned Cases</div>
+        <div class="stat-value">{{ unassigned_count }}</div>
+        <div class="stat-subtext">Awaiting manual/AI dispatch</div>
+      </div>
+      <div class="stat-icon-wrapper yellow">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- Middle Row: Category Distribution (CSS bars) + Priority Distribution -->
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+    <!-- Category Distribution Pure CSS Bars -->
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <h2 class="card-title">Category Distribution</h2>
+          <p class="card-subtitle">Breakdown by issue classification</p>
+        </div>
+      </div>
+
+      <div class="css-bar-chart">
+        {% for cat_name, count in category_distribution.items() %}
+        <div class="css-bar-item">
+          <span class="css-bar-label">{{ cat_name }}</span>
+          <div class="css-bar-track">
+            <div class="css-bar-fill" style="width: {% if total_count > 0 %}{{ (count / total_count * 100)|round }}{% else %}0{% endif %}%; background-color: var(--pastel-blue);"></div>
+          </div>
+          <span class="css-bar-count">{{ count }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Priority Breakdown Pure CSS Bars -->
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <h2 class="card-title">Priority & Urgency Assessment</h2>
+          <p class="card-subtitle">AI & deterministic risk classification</p>
+        </div>
+      </div>
+
+      <div class="css-bar-chart">
+        <div class="css-bar-item">
+          <span class="css-bar-label">Critical (12h SLA)</span>
+          <div class="css-bar-track">
+            <div class="css-bar-fill" style="width: {% if total_count > 0 %}{{ ((priority_distribution.get('Critical', 0)) / total_count * 100)|round }}{% else %}0{% endif %}%; background-color: #F87171;"></div>
+          </div>
+          <span class="css-bar-count">{{ priority_distribution.get('Critical', 0) }}</span>
+        </div>
+
+        <div class="css-bar-item">
+          <span class="css-bar-label">High (24h SLA)</span>
+          <div class="css-bar-track">
+            <div class="css-bar-fill" style="width: {% if total_count > 0 %}{{ ((priority_distribution.get('High', 0)) / total_count * 100)|round }}{% else %}0{% endif %}%; background-color: var(--pastel-peach);"></div>
+          </div>
+          <span class="css-bar-count">{{ priority_distribution.get('High', 0) }}</span>
+        </div>
+
+        <div class="css-bar-item">
+          <span class="css-bar-label">Medium (48h SLA)</span>
+          <div class="css-bar-track">
+            <div class="css-bar-fill" style="width: {% if total_count > 0 %}{{ ((priority_distribution.get('Medium', 0)) / total_count * 100)|round }}{% else %}0{% endif %}%; background-color: var(--pastel-yellow);"></div>
+          </div>
+          <span class="css-bar-count">{{ priority_distribution.get('Medium', 0) }}</span>
+        </div>
+
+        <div class="css-bar-item">
+          <span class="css-bar-label">Low (72h SLA)</span>
+          <div class="css-bar-track">
+            <div class="css-bar-fill" style="width: {% if total_count > 0 %}{{ ((priority_distribution.get('Low', 0)) / total_count * 100)|round }}{% else %}0{% endif %}%; background-color: #BAE6FD;"></div>
+          </div>
+          <span class="css-bar-count">{{ priority_distribution.get('Low', 0) }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom: Department Performance Table & Recent Activity -->
+  <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px;">
+    <!-- Department Caseload & SLA Table -->
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <h2 class="card-title">Department Caseload & SLA Targets</h2>
+          <p class="card-subtitle">Workload distribution across municipal teams</p>
+        </div>
+        <a href="/admin/departments" class="btn btn-outline btn-sm">Manage Departments</a>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Department</th>
+              <th>Assigned</th>
+              <th>Pending</th>
+              <th>Resolved</th>
+              <th>Target SLA</th>
+              <th style="text-align: right;">Resolution Rate</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for d in department_stats %}
+            <tr>
+              <td style="font-weight: 700; color: var(--primary-text);">{{ d.name }}</td>
+              <td style="font-weight: 600;">{{ d.total_assigned }}</td>
+              <td style="color: var(--warning); font-weight: 600;">{{ d.pending }}</td>
+              <td style="color: var(--success); font-weight: 600;">{{ d.resolved }}</td>
+              <td style="color: var(--secondary-text);">{{ d.sla_hours }} hrs</td>
+              <td style="text-align: right;">
+                <strong style="color: var(--primary-text);">{{ d.resolution_rate }}%</strong>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Recent Activity Audit Feed -->
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <h2 class="card-title" style="font-size: 0.95rem;">Operations Audit Trail</h2>
+          <p class="card-subtitle">Recent status transitions</p>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 10px; max-height: 320px; overflow-y: auto;">
+        {% for act in recent_activity %}
+        <div style="padding: 10px 12px; background-color: #F8FAFC; border: 1px solid var(--border-color); border-radius: 10px; font-size: 0.75rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+            <strong style="color: var(--primary-btn);">{{ act.reference_number }}</strong>
+            <span style="font-size: 0.68rem; color: var(--secondary-text);">{{ act.timestamp }}</span>
+          </div>
+          <div style="font-weight: 600; color: var(--primary-text); margin-bottom: 2px;">
+            {% if act.from_status %}{{ act.from_status }} → {% endif %}{{ act.to_status }}
+          </div>
+          <div style="color: var(--secondary-text); font-size: 0.7rem;">{{ act.reason }}</div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

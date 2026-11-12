@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}CivicFix AI — Autonomous Citizen Complaint Resolution{% endblock %}</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='25' fill='%236478D8'/><text x='50%' y='55%' dominant-baseline='central' text-anchor='middle' fill='white' font-size='60' font-family='sans-serif' font-weight='bold'>C</text></svg>">
+</head>
+<body>
+  <div class="app-wrapper">
+    <!-- Navbar -->
+    <header class="navbar">
+      <a href="{% if user and user.role in ['admin', 'officer'] %}/admin/dashboard{% else %}/citizen/dashboard{% endif %}" class="navbar-brand">
+        <div class="brand-logo-badge">C</div>
+        <div class="brand-text-container">
+          <div class="brand-title">
+            CivicFix <span class="ai-chip">AI</span>
+          </div>
+          <span class="brand-subtitle">Autonomous Municipal Resolution</span>
+        </div>
+      </a>
+
+      {% if user %}
+      <div class="navbar-nav">
+        <!-- Role badge -->
+        {% if user.role == 'admin' %}
+          <span class="badge" style="background-color: var(--pastel-lavender); color: #4338CA;">Administrator</span>
+        {% elif user.role == 'officer' %}
+          <span class="badge" style="background-color: var(--pastel-blue); color: #1E40AF;">Municipal Officer</span>
+        {% else %}
+          <span class="badge" style="background-color: var(--pastel-mint); color: #065F46;">Citizen Portal</span>
+        {% endif %}
+
+        <!-- Notification Bell Link -->
+        <a href="/notifications" style="display: flex; align-items: center; position: relative; padding: 6px; border-radius: 8px;" title="Notifications">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--secondary-text);"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+          {% if unread_notifications_count and unread_notifications_count > 0 %}
+            <span style="position: absolute; top: 0; right: 0; width: 16px; height: 16px; border-radius: 50%; background: var(--error); color: #FFF; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center;">
+              {{ unread_notifications_count }}
+            </span>
+          {% endif %}
+        </a>
+
+        <!-- User Profile info -->
+        <div class="user-profile-badge">
+          <div class="user-avatar-circle">
+            {{ user.full_name[0] }}
+          </div>
+          <div class="user-meta-text">
+            <span class="user-name-text">{{ user.full_name }}</span>
+            <span class="user-email-text">{{ user.email }}</span>
+          </div>
+        </div>
+
+        <!-- Logout Form -->
+        <form action="/logout" method="POST" style="margin: 0;">
+          <button type="submit" class="btn btn-outline btn-sm" title="Sign out" style="padding: 6px 10px;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            Sign out
+          </button>
+        </form>
+      </div>
+      {% endif %}
+    </header>
+
+    <div class="main-layout">
+      {% if user %}
+      <!-- Left Sidebar -->
+      <aside class="sidebar">
+        <div>
+          <div class="sidebar-heading">
+            {% if user.role in ['admin', 'officer'] %}Municipal Administration{% else %}Citizen Services{% endif %}
+          </div>
+          <ul class="sidebar-menu">
+            {% if user.role in ['admin', 'officer'] %}
+              <li>
+                <a href="/admin/dashboard" class="sidebar-link {% if active_page == 'admin_dashboard' %}active{% endif %}">
+                  <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+                  Operations Dashboard
+                </a>
+              </li>
+              <li>
+                <a href="/admin/complaints" class="sidebar-link {% if active_page == 'complaint_management' %}active{% endif %}">
+                  <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                  Complaint Management
+                </a>
+              </li>
+              <li>
+                <a href="/admin/ai-operations" class="sidebar-link {% if active_page == 'ai_operations' %}active{% endif %}">
+                  <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg>
+                  AI Operations Center
+                </a>
+              </li>
+              <li>
+                <a href="/admin/departments" class="sidebar-link {% if active_page == 'departments' %}active{% endif %}">
+                  <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"/><path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/></svg>
+                  Departments & SLAs
+                </a>
+              </li>
+              <li>
+                <a href="/admin/verification" class="sidebar-link {% if active_page == 'verification' %}active{% endif %}">
+                  <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+                  Resolution Verification
+                </a>
+              </li>
+            {% else %}
+              <li>
+                <a href="/citizen/dashboard" class="sidebar-link {% if active_page == 'citizen_dashboard' %}active{% endif %}">
+                  <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+                  My Dashboard
+                </a>
+              </li>
+              <li>
+                <a href="/complaints/new" class="sidebar-link {% if active_page == 'submit_complaint' %}active{% endif %}">
+                  <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+                  Report an Issue
+                </a>
+              </li>
+              <li>
+                <a href="/complaints" class="sidebar-link {% if active_page == 'complaints_list' %}active{% endif %}">
+                  <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                  My Complaints
+                </a>
+              </li>
+              <li>
+                <a href="/notifications" class="sidebar-link {% if active_page == 'notifications' %}active{% endif %}">
+                  <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+                  Notifications
+                </a>
+              </li>
+            {% endif %}
+          </ul>
+        </div>
+
+        <div class="sidebar-footer-card">
+          <div style="display: flex; align-items: center; gap: 6px; font-weight: 700; color: var(--primary-text); margin-bottom: 4px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            LangGraph Active
+          </div>
+          <p style="color: var(--secondary-text); font-size: 0.7rem; line-height: 1.4;">
+            5-agent workflow monitoring intake, duplicates, routing, priority & resolution verification.
+          </p>
+        </div>
+      </aside>
+      {% endif %}
+
+      <!-- Main Content -->
+      <main class="content-area">
+        {% block content %}{% endblock %}
+      </main>
+    </div>
+  </div>
+</body>
+</html>

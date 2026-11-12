@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+
+{% block title %}Citizen Dashboard — CivicFix AI{% endblock %}
+
+{% block content %}
+<!-- Welcome & CTA Banner -->
+<div class="card" style="background: linear-gradient(135deg, #FFFFFF, #F8FAFC 60%, rgba(184, 216, 248, 0.25)); display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 16px;">
+  <div>
+    <span style="font-size: 0.72rem; font-weight: 700; color: var(--primary-btn); text-transform: uppercase; letter-spacing: 0.5px;">
+      Citizen Grievance Portal
+    </span>
+    <h1 style="font-size: 1.6rem; font-weight: 800; color: var(--primary-text); margin-top: 4px;">
+      Welcome back, {{ user.full_name }}!
+    </h1>
+    <p style="font-size: 0.8rem; color: var(--secondary-text); margin-top: 4px; max-width: 600px;">
+      Submit municipal issues and monitor autonomous multi-agent triage in real time.
+    </p>
+  </div>
+  <a href="/complaints/new" class="btn btn-primary" style="padding: 12px 22px; font-size: 0.9rem;">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+    Report an Issue
+  </a>
+</div>
+
+<!-- KPI Stats Grid -->
+<div class="stats-grid">
+  <div class="stat-card">
+    <div>
+      <div class="stat-label">Total Submitted</div>
+      <div class="stat-value">{{ total_count }}</div>
+      <div class="stat-subtext">All registered reports</div>
+    </div>
+    <div class="stat-icon-wrapper blue">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div>
+      <div class="stat-label">Open / Queued</div>
+      <div class="stat-value">{{ open_count }}</div>
+      <div class="stat-subtext">AI triage or assigned</div>
+    </div>
+    <div class="stat-icon-wrapper lavender">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div>
+      <div class="stat-label">In Progress</div>
+      <div class="stat-value">{{ in_progress_count }}</div>
+      <div class="stat-subtext">Field crew dispatched</div>
+    </div>
+    <div class="stat-icon-wrapper yellow">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div>
+      <div class="stat-label">Resolved Cases</div>
+      <div class="stat-value">{{ resolved_count }}</div>
+      <div class="stat-subtext">Verified repairs</div>
+    </div>
+    <div class="stat-icon-wrapper mint">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+    </div>
+  </div>
+</div>
+
+<!-- Main Two-Column Section -->
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px;">
+  <!-- Left: Recent Complaints Table -->
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <h2 class="card-title">My Recent Complaints</h2>
+        <p class="card-subtitle">Real-time status and departmental routing</p>
+      </div>
+      <a href="/complaints" class="btn btn-outline btn-sm">
+        View All ({{ total_count }})
+      </a>
+    </div>
+
+    {% if complaints and complaints|length > 0 %}
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Ref ID</th>
+              <th>Title & Category</th>
+              <th>Assigned Department</th>
+              <th>Priority</th>
+              <th>Status</th>
+              <th style="text-align: right;">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for c in complaints[:5] %}
+            <tr>
+              <td style="font-weight: 700; color: var(--primary-btn);">{{ c.reference_number }}</td>
+              <td>
+                <div style="font-weight: 600; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                  {{ c.title }}
+                </div>
+                <div style="font-size: 0.72rem; color: var(--secondary-text);">{{ c.category }}</div>
+              </td>
+              <td>
+                <span style="color: var(--secondary-text); font-weight: 500;">
+                  {% if c.assigned_department %}{{ c.assigned_department.name }}{% else %}Routing Pending{% endif %}
+                </span>
+              </td>
+              <td>
+                {% if c.priority == 'Critical' %}
+                  <span class="badge badge-critical">Critical</span>
+                {% elif c.priority == 'High' %}
+                  <span class="badge badge-high">High</span>
+                {% elif c.priority == 'Medium' %}
+                  <span class="badge badge-medium">Medium</span>
+                {% else %}
+                  <span class="badge badge-low">Low</span>
+                {% endif %}
+              </td>
+              <td>
+                <span class="badge badge-{{ c.status|lower|replace(' ', '-') }}">{{ c.status }}</span>
+              </td>
+              <td style="text-align: right;">
+                <a href="/complaints/{{ c.id }}" class="btn btn-outline btn-sm">
+                  Track
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div style="text-align: center; padding: 40px 20px;">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" stroke-width="1.5" style="margin-bottom: 12px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--primary-text);">No complaints reported yet</h3>
+        <p style="font-size: 0.8rem; color: var(--secondary-text); margin-top: 4px; max-width: 320px; margin-left: auto; margin-right: auto;">
+          Spotted a broken streetlight, pothole, or garbage pile? Submit a report to begin resolution.
+        </p>
+        <a href="/complaints/new" class="btn btn-primary btn-sm" style="margin-top: 14px;">
+          Submit First Complaint
+        </a>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Right: Status Distribution & AI Insights -->
+  <div style="display: flex; flex-direction: column; gap: 24px;">
+    <!-- Pure HTML/CSS Status Distribution Chart -->
+    <div class="card">
+      <h3 class="card-title" style="font-size: 0.95rem;">Complaint Status Distribution</h3>
+      <p class="card-subtitle">Breakdown of reported issues</p>
+
+      <div class="css-bar-chart" style="margin-top: 14px;">
+        <div class="css-bar-item">
+          <span class="css-bar-label">Open / Queued</span>
+          <div class="css-bar-track">
+            <div class="css-bar-fill" style="width: {% if total_count > 0 %}{{ (open_count / total_count * 100)|round }}{% else %}0{% endif %}%; background-color: var(--pastel-blue);"></div>
+          </div>
+          <span class="css-bar-count">{{ open_count }}</span>
+        </div>
+
+        <div class="css-bar-item">
+          <span class="css-bar-label">In Progress</span>
+          <div class="css-bar-track">
+            <div class="css-bar-fill" style="width: {% if total_count > 0 %}{{ (in_progress_count / total_count * 100)|round }}{% else %}0{% endif %}%; background-color: var(--pastel-yellow);"></div>
+          </div>
+          <span class="css-bar-count">{{ in_progress_count }}</span>
+        </div>
+
+        <div class="css-bar-item">
+          <span class="css-bar-label">Resolved / Closed</span>
+          <div class="css-bar-track">
+            <div class="css-bar-fill" style="width: {% if total_count > 0 %}{{ (resolved_count / total_count * 100)|round }}{% else %}0{% endif %}%; background-color: var(--pastel-mint);"></div>
+          </div>
+          <span class="css-bar-count">{{ resolved_count }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI Insights Card -->
+    <div class="card" style="background: linear-gradient(135deg, rgba(217, 204, 255, 0.2), #FFFFFF); border-color: var(--pastel-lavender);">
+      <div style="display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 0.85rem; color: var(--primary-text); margin-bottom: 8px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary-btn)" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        AI Multi-Agent Triage Active
+      </div>
+      <p style="font-size: 0.75rem; color: var(--secondary-text); line-height: 1.5;">
+        Every complaint you submit triggers our 5-agent LangGraph workflow. It assesses severity, flags nearby duplicates, assigns the responsible municipal department, and tracks field evidence.
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %}

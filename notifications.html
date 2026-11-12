@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block title %}Notifications & Activity — CivicFix AI{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Notifications & Activity Center</h1>
+    <p class="page-subtitle">Real-time alerts, AI triage updates, department routing events, and municipal audit logs.</p>
+  </div>
+  {% if unread_count and unread_count > 0 %}
+  <form action="/notifications/read-all" method="POST" style="margin: 0;">
+    <button type="submit" class="btn btn-outline btn-sm">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+      Mark All as Read
+    </button>
+  </form>
+  {% endif %}
+</div>
+
+<div class="grid-layout grid-2" style="grid-template-columns: 1.4fr 1fr; align-items: start;">
+  <!-- Left column: Notifications Feed -->
+  <div>
+    <div class="card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+        <h2 style="font-size: 1.1rem; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 8px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary-btn)" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+          Direct Notifications
+          {% if unread_count and unread_count > 0 %}
+            <span class="badge" style="background: var(--pastel-peach); color: #C05621;">{{ unread_count }} unread</span>
+          {% endif %}
+        </h2>
+        <span class="text-muted" style="font-size: 0.8rem;">Showing latest {{ notifications|length }}</span>
+      </div>
+
+      {% if notifications and notifications|length > 0 %}
+        <div style="display: flex; flex-direction: column; gap: 0.85rem;">
+          {% for notif in notifications %}
+            <div style="padding: 1rem; border-radius: 12px; border: 1px solid {% if not notif.is_read %}var(--primary-btn){% else %}var(--border-color){% endif %}; background: {% if not notif.is_read %}#FAF5FF{% else %}#FFFFFF{% endif %}; transition: transform 0.15s ease;">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 0.75rem;">
+                <div style="display: flex; gap: 0.75rem; align-items: flex-start;">
+                  <!-- Icon by type -->
+                  <div style="width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+                    {% if notif.notification_type == 'assignment' %}background: var(--pastel-blue); color: #1E40AF;
+                    {% elif notif.notification_type == 'status_change' %}background: var(--pastel-mint); color: #065F46;
+                    {% elif notif.notification_type == 'priority' %}background: var(--pastel-peach); color: #C05621;
+                    {% elif notif.notification_type == 'verification' %}background: var(--pastel-lavender); color: #4338CA;
+                    {% elif notif.notification_type == 'duplicate' %}background: var(--pastel-yellow); color: #975A16;
+                    {% else %}background: #EDF2F7; color: #4A5568;{% endif %}">
+                    {% if notif.notification_type == 'assignment' %}
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+                    {% elif notif.notification_type == 'status_change' %}
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                    {% elif notif.notification_type == 'priority' %}
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    {% elif notif.notification_type == 'verification' %}
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+                    {% else %}
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    {% endif %}
+                  </div>
+
+                  <div>
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 2px;">
+                      <span style="font-weight: 700; font-size: 0.95rem; color: var(--primary-text);">{{ notif.title }}</span>
+                      {% if not notif.is_read %}
+                        <span class="badge" style="background: var(--primary-btn); color: #FFF; font-size: 0.65rem; padding: 2px 6px;">NEW</span>
+                      {% endif %}
+                    </div>
+                    <p style="color: var(--secondary-text); font-size: 0.85rem; line-height: 1.45; margin: 0 0 6px 0;">
+                      {{ notif.message }}
+                    </p>
+                    <div style="display: flex; align-items: center; gap: 12px; font-size: 0.75rem; color: var(--secondary-text);">
+                      <span>{{ notif.created_at.strftime('%b %d, %Y at %I:%M %p') if notif.created_at else 'Just now' }}</span>
+                      {% if notif.complaint_id %}
+                        <a href="{% if user and user.role in ['admin', 'officer'] %}/admin/complaints/{{ notif.complaint_id }}{% else %}/complaints/{{ notif.complaint_id }}{% endif %}" style="color: var(--primary-btn); font-weight: 600; text-decoration: underline;">
+                          View Complaint &rarr;
+                        </a>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+
+                {% if not notif.is_read %}
+                <form action="/notifications/{{ notif.id }}/read" method="POST" style="margin: 0;">
+                  <button type="submit" class="btn btn-outline btn-sm" title="Mark as read" style="padding: 4px 8px; font-size: 0.75rem;">
+                    ✓ Read
+                  </button>
+                </form>
+                {% endif %}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div style="text-align: center; padding: 3rem 1rem; color: var(--secondary-text);">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom: 0.75rem; color: #CBD5E1;"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+          <p style="margin: 0; font-size: 0.95rem; font-weight: 600;">All caught up!</p>
+          <p style="margin: 4px 0 0 0; font-size: 0.85rem;">You have no unread municipal or triage notifications.</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Right column: Activity Logs & Timeline -->
+  <div>
+    <div class="card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+        <h2 style="font-size: 1.1rem; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 8px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary-btn)" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          Recent Activity Log
+        </h2>
+        <span class="badge" style="background: var(--pastel-mint); color: #065F46;">Live Stream</span>
+      </div>
+
+      {% if audit_logs and audit_logs|length > 0 %}
+        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+          {% for log in audit_logs %}
+            <div style="padding: 0.75rem 1rem; border-left: 3px solid var(--primary-btn); background: #FAFAFA; border-radius: 0 8px 8px 0;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px;">
+                <span style="font-weight: 600; font-size: 0.85rem; color: var(--primary-text);">{{ log.action }}</span>
+                <span style="font-size: 0.75rem; color: var(--secondary-text);">
+                  {{ log.created_at.strftime('%b %d, %H:%M') if log.created_at else '' }}
+                </span>
+              </div>
+              <p style="font-size: 0.8rem; color: var(--secondary-text); margin: 0 0 4px 0; line-height: 1.4;">
+                {{ log.details }}
+              </p>
+              <div style="font-size: 0.72rem; color: #94A3B8;">
+                Entity: {{ log.entity_type }} {% if log.entity_id %}#{{ log.entity_id }}{% endif %}
+                {% if log.user %} &bull; by {{ log.user.full_name }}{% endif %}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="text-muted" style="font-size: 0.85rem; text-align: center; padding: 2rem 0;">No audit events recorded yet.</p>
+      {% endif %}
+    </div>
+
+    <!-- Quick Help Card -->
+    <div class="card" style="margin-top: 1.5rem; background: linear-gradient(135deg, #F0F4FF, #F8FAFC); border: 1px solid var(--pastel-blue);">
+      <h3 style="font-size: 0.95rem; font-weight: 700; color: #1E3A8A; margin-top: 0; margin-bottom: 6px;">
+        Automatic Event Subscriptions
+      </h3>
+      <p style="font-size: 0.8rem; color: #3B82F6; line-height: 1.45; margin: 0;">
+        CivicFix AI continuously dispatches alerts whenever the multi-agent pipeline completes complaint categorization, routes to departments, detects urgent safety hazards, or verifies resolution evidence.
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %}

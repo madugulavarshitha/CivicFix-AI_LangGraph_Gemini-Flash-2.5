@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+
+{% block title %}Report a Civic Issue — CivicFix AI{% endblock %}
+
+{% block content %}
+<div style="max-width: 780px; margin: 0 auto;">
+  <div style="margin-bottom: 24px;">
+    <span style="font-size: 0.72rem; font-weight: 700; color: var(--primary-btn); text-transform: uppercase; letter-spacing: 0.5px;">
+      Citizen Grievance Submission
+    </span>
+    <h1 style="font-size: 1.6rem; font-weight: 800; color: var(--primary-text); margin-top: 4px;">
+      Report a Municipal Issue
+    </h1>
+    <p style="font-size: 0.8rem; color: var(--secondary-text); margin-top: 4px;">
+      Submit details below. The LangGraph 5-agent pipeline will classify the incident, check for duplicates, and route to the correct municipal team.
+    </p>
+  </div>
+
+  {% if error %}
+    <div class="alert alert-error">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <span>{{ error }}</span>
+    </div>
+  {% endif %}
+
+  <form action="/complaints/new" method="POST" enctype="multipart/form-data">
+    <!-- 1. Category Selection Grid -->
+    <div class="card">
+      <label class="form-label" style="font-size: 0.85rem; margin-bottom: 12px;">
+        1. Select Issue Category <span style="color: var(--error);">*</span>
+      </label>
+
+      <div class="category-radio-grid">
+        <label class="category-radio-card">
+          <input type="radio" name="category" value="Road Damage" checked>
+          <div class="category-dot" style="background-color: var(--pastel-blue);"></div>
+          <div style="font-weight: 700; font-size: 0.85rem; color: var(--primary-text);">Road Damage</div>
+          <div style="font-size: 0.7rem; color: var(--secondary-text); margin-top: 2px;">Potholes, cracked asphalt, craters</div>
+        </label>
+
+        <label class="category-radio-card">
+          <input type="radio" name="category" value="Garbage and Sanitation">
+          <div class="category-dot" style="background-color: var(--pastel-mint);"></div>
+          <div style="font-weight: 700; font-size: 0.85rem; color: var(--primary-text);">Garbage & Sanitation</div>
+          <div style="font-size: 0.7rem; color: var(--secondary-text); margin-top: 2px;">Overflowing bins, sidewalk waste</div>
+        </label>
+
+        <label class="category-radio-card">
+          <input type="radio" name="category" value="Streetlight Failure">
+          <div class="category-dot" style="background-color: var(--pastel-yellow);"></div>
+          <div style="font-weight: 700; font-size: 0.85rem; color: var(--primary-text);">Streetlight Failure</div>
+          <div style="font-size: 0.7rem; color: var(--secondary-text); margin-top: 2px;">Dark roads, flickering lamps</div>
+        </label>
+
+        <label class="category-radio-card">
+          <input type="radio" name="category" value="Water Leakage">
+          <div class="category-dot" style="background-color: var(--pastel-blue);"></div>
+          <div style="font-weight: 700; font-size: 0.85rem; color: var(--primary-text);">Water Leakage</div>
+          <div style="font-size: 0.7rem; color: var(--secondary-text); margin-top: 2px;">Burst mains, leaking supply lines</div>
+        </label>
+
+        <label class="category-radio-card">
+          <input type="radio" name="category" value="Drainage and Sewage">
+          <div class="category-dot" style="background-color: var(--pastel-peach);"></div>
+          <div style="font-weight: 700; font-size: 0.85rem; color: var(--primary-text);">Drainage & Sewage</div>
+          <div style="font-size: 0.7rem; color: var(--secondary-text); margin-top: 2px;">Clogged drains, manhole overflows</div>
+        </label>
+
+        <label class="category-radio-card">
+          <input type="radio" name="category" value="Public Safety">
+          <div class="category-dot" style="background-color: var(--pastel-lavender);"></div>
+          <div style="font-weight: 700; font-size: 0.85rem; color: var(--primary-text);">Public Safety</div>
+          <div style="font-size: 0.7rem; color: var(--secondary-text); margin-top: 2px;">Live wires, sinkholes, safety hazards</div>
+        </label>
+
+        <label class="category-radio-card">
+          <input type="radio" name="category" value="Other">
+          <div class="category-dot" style="background-color: #CBD5E1;"></div>
+          <div style="font-weight: 700; font-size: 0.85rem; color: var(--primary-text);">Other</div>
+          <div style="font-size: 0.7rem; color: var(--secondary-text); margin-top: 2px;">General municipal inquiries</div>
+        </label>
+      </div>
+    </div>
+
+    <!-- 2. Complaint Title & Description -->
+    <div class="card">
+      <label class="form-label" style="font-size: 0.85rem; margin-bottom: 12px;">
+        2. Incident Description
+      </label>
+
+      <div class="form-group">
+        <label class="form-label" for="title">Complaint Title <span style="color: var(--error);">*</span></label>
+        <input type="text" id="title" name="title" class="form-control" placeholder="e.g. Deep pothole causing vehicular skids" required minlength="5" value="{{ title or '' }}">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="description">Detailed Description <span style="color: var(--error);">*</span></label>
+        <textarea id="description" name="description" class="form-control" placeholder="Describe the severity, exact location details, any public safety hazards, and impact..." required minlength="15">{{ description or '' }}</textarea>
+      </div>
+    </div>
+
+    <!-- 3. Location, Coordinates, Landmark -->
+    <div class="card">
+      <label class="form-label" style="font-size: 0.85rem; margin-bottom: 12px;">
+        3. Location & Proximity Details
+      </label>
+
+      <div class="form-group">
+        <label class="form-label" for="location">Street Address / Area <span style="color: var(--error);">*</span></label>
+        <input type="text" id="location" name="location" class="form-control" placeholder="e.g. 5th Cross Road, Indiranagar" required minlength="3" value="{{ location or '' }}">
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+        <div class="form-group">
+          <label class="form-label" for="landmark">Landmark (Optional)</label>
+          <input type="text" id="landmark" name="landmark" class="form-control" placeholder="e.g. Opposite Green Grocery" value="{{ landmark or '' }}">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="contact_phone">Contact Phone (Optional)</label>
+          <input type="tel" id="contact_phone" name="contact_phone" class="form-control" placeholder="e.g. +1 (555) 019-2831" value="{{ contact_phone or '' }}">
+        </div>
+      </div>
+
+      <!-- Optional Coordinates for Geographic Proximity & Duplicate Detection -->
+      <div style="background-color: #F8FAFC; border: 1px solid var(--border-color); border-radius: 12px; padding: 14px;">
+        <span style="font-size: 0.78rem; font-weight: 700; color: var(--primary-text); display: block; margin-bottom: 4px;">
+          Geographic Coordinates (Used by Duplicate Detector):
+        </span>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 8px;">
+          <input type="number" step="any" name="latitude" class="form-control" placeholder="Latitude (e.g. 12.9716)" value="{{ latitude or '' }}">
+          <input type="number" step="any" name="longitude" class="form-control" placeholder="Longitude (e.g. 77.5946)" value="{{ longitude or '' }}">
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. Photo Evidence Upload -->
+    <div class="card">
+      <label class="form-label" style="font-size: 0.85rem; margin-bottom: 12px;">
+        4. Supporting Photograph (Optional)
+      </label>
+
+      <div class="form-group">
+        <input type="file" id="file" name="file" accept="image/*" class="form-control" style="padding: 10px;">
+        <p style="font-size: 0.72rem; color: var(--secondary-text); margin-top: 6px;">
+          Attach JPG, PNG, or WEBP image of the civic issue.
+        </p>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 10px;">
+      <a href="/citizen/dashboard" class="btn btn-outline">Cancel</a>
+      <button type="submit" class="btn btn-primary" style="padding: 12px 24px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        Submit Complaint & Run AI Triage
+      </button>
+    </div>
+  </form>
+</div>
+{% endblock %}

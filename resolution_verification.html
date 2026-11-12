@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+
+{% block title %}Resolution Verification — CivicFix AI{% endblock %}
+
+{% block content %}
+<div style="max-width: 820px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px;">
+  <!-- Header -->
+  <div>
+    <span style="font-size: 0.72rem; font-weight: 700; color: var(--primary-btn); text-transform: uppercase; letter-spacing: 0.5px;">
+      Field Work Audit & Sign-Off
+    </span>
+    <h1 style="font-size: 1.6rem; font-weight: 800; color: var(--primary-text); margin-top: 4px;">
+      Resolution Evidence & Verification
+    </h1>
+    <p style="font-size: 0.8rem; color: var(--secondary-text); margin-top: 4px;">
+      Submit work completion notes and evidence. Agent 5 (Resolution Verifier) evaluates whether the evidence addresses the reported problem before closing the case.
+    </p>
+  </div>
+
+  {% if verification_result %}
+    <!-- Verification Result Banner -->
+    <div class="card" style="border-color: {% if verification_result.outcome == 'Verified' %}var(--pastel-mint){% else %}var(--pastel-yellow){% endif %}; background-color: {% if verification_result.outcome == 'Verified' %}#F2FAF6{% else %}#FFFBEB{% endif %};">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+        <div style="display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 0.95rem; color: {% if verification_result.outcome == 'Verified' %}#065F46{% else %}#92400E{% endif %};">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          Agent 5 Verification: {{ verification_result.outcome }}
+        </div>
+        <span class="badge" style="background: #FFFFFF; font-size: 0.75rem; font-weight: 700;">
+          {{ (verification_result.confidence_score * 100)|round }}% Confidence
+        </span>
+      </div>
+
+      <p style="font-size: 0.82rem; color: var(--primary-text); line-height: 1.5;">
+        {{ verification_result.verification_summary }}
+      </p>
+
+      {% if verification_result.checks %}
+      <div style="margin-top: 12px; padding: 12px; background: #FFFFFF; border-radius: 10px; border: 1px solid var(--border-color); font-size: 0.75rem;">
+        <strong style="color: var(--secondary-text); text-transform: uppercase; font-size: 0.68rem; display: block; margin-bottom: 6px;">Automated Verification Checklist:</strong>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+          {% for check_name, passed in verification_result.checks.items() %}
+            <div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px dashed var(--border-color);">
+              <span style="color: var(--secondary-text);">{{ check_name|replace('_', ' ')|capitalize }}:</span>
+              {% if passed %}
+                <strong style="color: var(--success);">Passed ✓</strong>
+              {% else %}
+                <strong style="color: var(--error);">Missing / Review ⚠️</strong>
+              {% endif %}
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  {% endif %}
+
+  <!-- Submit Evidence Form -->
+  <div class="card">
+    <h2 class="card-title" style="font-size: 1.05rem; margin-bottom: 16px;">
+      Submit Field Resolution Evidence
+    </h2>
+
+    {% if pending_complaints and pending_complaints|length > 0 %}
+      <form action="/admin/verification" method="POST" enctype="multipart/form-data">
+        <div class="form-group">
+          <label class="form-label" for="complaint_id">Select In-Progress Complaint <span style="color: var(--error);">*</span></label>
+          <select id="complaint_id" name="complaint_id" class="form-control" required>
+            {% for c in pending_complaints %}
+              <option value="{{ c.id }}">
+                {{ c.reference_number }}: {{ c.title }} ({{ c.category }} — {{ c.priority }} Priority)
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="completion_notes">
+            Corrective Action & Completion Notes <span style="color: var(--error);">*</span>
+          </label>
+          <textarea id="completion_notes" name="completion_notes" class="form-control" placeholder="Specify repair actions taken (e.g. patched with asphalt, replaced bulb, unclogged drain, cleared 2 tons of waste)..." required minlength="10"></textarea>
+          <p style="font-size: 0.72rem; color: var(--secondary-text); margin-top: 4px;">
+            The Resolution Verifier parses action keywords (fixed, replaced, cleared, patched, installed, unclogged) and compares them against the reported issue.
+          </p>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+          <div class="form-group">
+            <label class="form-label" for="file">After-Resolution Photo</label>
+            <input type="file" id="file" name="file" accept="image/*" class="form-control" style="padding: 8px;">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="supporting_details">Work Order / Inspection # (Optional)</label>
+            <input type="text" id="supporting_details" name="supporting_details" class="form-control" placeholder="e.g. Work Order #SAN-9901">
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
+          <button type="submit" class="btn btn-success" style="padding: 12px 24px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            Submit Evidence & Run Agent 5 Verification
+          </button>
+        </div>
+      </form>
+    {% else %}
+      <div style="text-align: center; padding: 36px 20px;">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2" style="margin-bottom: 8px;"><polyline points="20 6 9 17 4 12"/></svg>
+        <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--primary-text);">No Pending In-Progress Complaints</h3>
+        <p style="font-size: 0.8rem; color: var(--secondary-text); margin-top: 4px;">
+          All currently assigned complaints have already been submitted with evidence or verified.
+        </p>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Recent Verifications Table -->
+  <div class="card" style="padding: 0; overflow: hidden;">
+    <div style="padding: 16px 20px; border-bottom: 1px solid var(--border-color); background: #F8FAFC;">
+      <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--primary-text);">Recently Verified Resolutions</h3>
+    </div>
+    <div class="table-responsive" style="border: none;">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Ref ID</th>
+            <th>Title</th>
+            <th>Officer Notes</th>
+            <th>Verification Outcome</th>
+            <th style="text-align: right;">Verified At</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for v in recent_verifications %}
+          <tr>
+            <td style="font-weight: 700; color: var(--primary-btn);">{{ v.complaint.reference_number }}</td>
+            <td style="font-weight: 600; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+              {{ v.complaint.title }}
+            </td>
+            <td style="font-size: 0.75rem; color: var(--secondary-text); max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+              {% if v.complaint.resolution_evidence %}{{ v.complaint.resolution_evidence.completion_notes }}{% else %}-{% endif %}
+            </td>
+            <td>
+              {% if v.outcome == 'Verified' %}
+                <span class="badge badge-verified">Verified ✓</span>
+              {% elif v.outcome == 'Needs Review' %}
+                <span class="badge badge-medium">Needs Review ⚠️</span>
+              {% else %}
+                <span class="badge badge-rejected">Rejected ✗</span>
+              {% endif %}
+            </td>
+            <td style="text-align: right; font-size: 0.72rem; color: var(--secondary-text);">
+              {{ v.verified_at.strftime('%b %d, %I:%M %p') }}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

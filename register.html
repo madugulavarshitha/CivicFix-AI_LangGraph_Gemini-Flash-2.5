@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register Citizen Account — CivicFix AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" href="/static/images/logo_icon.png">
+
+  <style>
+    :root {
+      --primary-blue: #2563EB;
+      --primary-blue-hover: #1D4ED8;
+      --primary-navy: #0F172A;
+      --text-muted: #64748B;
+      --text-body: #475569;
+      --cyan-accent: #0284C7;
+      --border-light: #E2E8F0;
+      --card-bg: #FFFFFF;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: radial-gradient(130% 120% at 10% 20%, #EEF6FF 0%, #F5F9FF 45%, #E9F2FC 100%);
+      color: var(--primary-navy);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 20px;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Ambient background soft glowing blobs */
+    .ambient-glow-1 {
+      position: absolute;
+      width: 480px;
+      height: 480px;
+      left: -120px;
+      top: -120px;
+      background: radial-gradient(circle, rgba(186, 230, 253, 0.45) 0%, rgba(238, 246, 255, 0) 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .ambient-glow-2 {
+      position: absolute;
+      width: 520px;
+      height: 520px;
+      right: -80px;
+      bottom: -100px;
+      background: radial-gradient(circle, rgba(199, 210, 254, 0.35) 0%, rgba(238, 246, 255, 0) 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .register-container {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 1200px;
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 48px;
+      align-items: center;
+    }
+
+    /* ================================================================
+       LEFT COLUMN: Visual Hero & Flow
+       ================================================================ */
+    .hero-section {
+      display: flex;
+      flex-direction: column;
+      padding: 10px 10px 10px 0;
+    }
+
+    .brand-top {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+    }
+
+    .brand-logo-img {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.18);
+      object-fit: contain;
+    }
+
+    .brand-title-wrap {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .brand-title {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: var(--primary-navy);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      letter-spacing: -0.02em;
+    }
+
+    .ai-badge {
+      background: var(--primary-blue);
+      color: #FFFFFF;
+      font-size: 0.72rem;
+      font-weight: 800;
+      padding: 2px 7px;
+      border-radius: 6px;
+      letter-spacing: 0.5px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .brand-tagline {
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      margin-top: 1px;
+    }
+
+    .hero-heading {
+      font-size: clamp(2.3rem, 3.8vw, 3.25rem);
+      font-weight: 900;
+      line-height: 1.12;
+      letter-spacing: -0.035em;
+      color: var(--primary-navy);
+      margin-top: 36px;
+      margin-bottom: 16px;
+    }
+
+    .hero-heading .highlight {
+      color: var(--cyan-accent);
+      background: linear-gradient(135deg, #0284C7 0%, #0369A1 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-desc {
+      font-size: 1.05rem;
+      line-height: 1.6;
+      color: var(--text-body);
+      max-width: 480px;
+      margin-bottom: 28px;
+    }
+
+    /* 3-Step Process Flow */
+    .flow-steps {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 26px;
+    }
+
+    .flow-step-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .flow-icon-circle {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .flow-icon-circle.report {
+      background-color: #E0F2FE;
+      color: #0284C7;
+    }
+
+    .flow-icon-circle.track {
+      background-color: #CCFBF1;
+      color: #0D9488;
+    }
+
+    .flow-icon-circle.resolve {
+      background-color: #D1FAE5;
+      color: #059669;
+    }
+
+    .flow-label {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--primary-navy);
+      line-height: 1.25;
+    }
+
+    .flow-arrow {
+      color: #94A3B8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 4px;
+    }
+
+    /* City Panoramic Illustration */
+    .city-art-card {
+      position: relative;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 16px 36px -8px rgba(15, 23, 42, 0.12), 0 2px 8px rgba(0, 0, 0, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.85);
+      background: #FFFFFF;
+      transition: transform 0.35s ease, box-shadow 0.35s ease;
+    }
+
+    .city-art-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 22px 42px -6px rgba(15, 23, 42, 0.15), 0 4px 12px rgba(0, 0, 0, 0.06);
+    }
+
+    .city-art-card img {
+      width: 100%;
+      height: auto;
+      display: block;
+      object-fit: cover;
+    }
+
+    /* ================================================================
+       RIGHT COLUMN: Floating Registration Card (Pure HTML & CSS)
+       ================================================================ */
+    .register-card {
+      background: var(--card-bg);
+      border-radius: 28px;
+      padding: 32px 34px 28px;
+      box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.12), 0 0 0 1px rgba(226, 232, 240, 0.85);
+      width: 100%;
+      max-width: 490px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    .card-top-brand {
+      text-align: center;
+      margin-bottom: 18px;
+    }
+
+    .card-logo-row {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 4px;
+    }
+
+    .card-logo-img {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      object-fit: contain;
+    }
+
+    .card-title {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: var(--primary-navy);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      letter-spacing: -0.02em;
+    }
+
+    .card-tagline {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    /* Alerts */
+    .alert-error {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      background-color: #FEF2F2;
+      border: 1px solid #FCA5A5;
+      color: #B91C1C;
+      border-radius: 10px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      margin-bottom: 14px;
+    }
+
+    /* Form Controls */
+    .form-group {
+      margin-bottom: 11px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--primary-navy);
+      margin-bottom: 4px;
+    }
+
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .input-icon-left {
+      position: absolute;
+      left: 14px;
+      color: #94A3B8;
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .form-input {
+      width: 100%;
+      height: 40px;
+      padding: 0 14px 0 42px;
+      font-family: inherit;
+      font-size: 0.88rem;
+      color: var(--primary-navy);
+      background-color: #FFFFFF;
+      border: 1px solid #CBD5E1;
+      border-radius: 10px;
+      outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .form-input:focus {
+      border-color: var(--primary-blue);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
+    }
+
+    .form-input::placeholder {
+      color: #94A3B8;
+      font-size: 0.82rem;
+    }
+
+    .role-notice {
+      background-color: #F8FAFC;
+      border: 1px solid var(--border-light);
+      border-radius: 10px;
+      padding: 9px 12px;
+      margin: 12px 0 14px;
+      font-size: 0.74rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .role-notice svg {
+      color: var(--primary-blue);
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    /* Submit Button */
+    .btn-submit {
+      width: 100%;
+      height: 44px;
+      background: var(--primary-blue);
+      color: #FFFFFF;
+      border: none;
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 0.92rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.28);
+      transition: all 0.18s ease;
+    }
+
+    .btn-submit:hover {
+      background: var(--primary-blue-hover);
+      box-shadow: 0 6px 20px rgba(37, 99, 235, 0.35);
+      transform: translateY(-1px);
+    }
+
+    .btn-submit:active {
+      transform: translateY(0);
+    }
+
+    .card-footer-text {
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 16px;
+    }
+
+    .card-footer-text a {
+      color: var(--primary-blue);
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    .card-footer-text a:hover {
+      text-decoration: underline;
+    }
+
+    /* Responsive */
+    @media (max-width: 980px) {
+      .register-container {
+        grid-template-columns: 1fr;
+        gap: 40px;
+      }
+      .hero-section {
+        padding: 0;
+        text-align: center;
+        align-items: center;
+      }
+      .brand-top {
+        justify-content: center;
+      }
+      .flow-steps {
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+      .city-art-card {
+        max-width: 520px;
+        margin: 0 auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="ambient-glow-1"></div>
+  <div class="ambient-glow-2"></div>
+
+  <div class="register-container">
+    <!-- ============================================================
+         LEFT COLUMN: Visual Hero & Flow
+         ============================================================ -->
+    <div class="hero-section">
+      <div class="brand-top">
+        <img src="/static/images/logo_icon.png" alt="CivicFix Logo" class="brand-logo-img">
+        <div class="brand-title-wrap">
+          <div class="brand-title">
+            CivicFix <span class="ai-badge">AI</span>
+          </div>
+          <span class="brand-tagline">Autonomous Municipal Complaint Resolution</span>
+        </div>
+      </div>
+
+      <h1 class="hero-heading">
+        Empowering citizens,<br>
+        <span class="highlight">building better cities.</span>
+      </h1>
+
+      <p class="hero-desc">
+        Create your official citizen account to report municipal grievances, track live AI resolution steps, and get notified in real time.
+      </p>
+
+      <!-- 3-Step Process Flow -->
+      <div class="flow-steps">
+        <div class="flow-step-item">
+          <div class="flow-icon-circle report" title="Report Issues">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m3 11 18-5v12L3 14v-3z"/>
+              <path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/>
+            </svg>
+          </div>
+          <div class="flow-label">Report<br>Issues</div>
+        </div>
+
+        <div class="flow-arrow">
+          <svg width="32" height="10" viewBox="0 0 32 10" fill="none">
+            <path d="M1 5h24M22 1l4 4-4 4" stroke="#94A3B8" stroke-width="1.8" stroke-dasharray="2 3" stroke-linecap="round"/>
+          </svg>
+        </div>
+
+        <div class="flow-step-item">
+          <div class="flow-icon-circle track" title="Track Progress">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
+              <circle cx="12" cy="10" r="3"/>
+            </svg>
+          </div>
+          <div class="flow-label">Track<br>Progress</div>
+        </div>
+
+        <div class="flow-arrow">
+          <svg width="32" height="10" viewBox="0 0 32 10" fill="none">
+            <path d="M1 5h24M22 1l4 4-4 4" stroke="#94A3B8" stroke-width="1.8" stroke-dasharray="2 3" stroke-linecap="round"/>
+          </svg>
+        </div>
+
+        <div class="flow-step-item">
+          <div class="flow-icon-circle resolve" title="Faster Resolution">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </div>
+          <div class="flow-label">Faster<br>Resolution</div>
+        </div>
+      </div>
+
+      <!-- City Panoramic Graphic with Civic Action Pins -->
+      <div class="city-art-card">
+        <img src="/static/images/city_hero_clean.png" alt="Smart Municipal City Infrastructure with Civic Action Pins">
+      </div>
+    </div>
+
+    <!-- ============================================================
+         RIGHT COLUMN: Registration Card (Pure HTML5 & CSS3)
+         ============================================================ -->
+    <div class="register-card">
+      <div class="card-top-brand">
+        <div class="card-logo-row">
+          <img src="/static/images/logo_icon.png" alt="CivicFix Logo" class="card-logo-img">
+          <div class="card-title">
+            CivicFix <span class="ai-badge">AI</span>
+          </div>
+        </div>
+        <div class="card-tagline">
+          Create Your Citizen Account
+        </div>
+      </div>
+
+      {% if error %}
+      <div class="alert-error">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        <span>{{ error }}</span>
+      </div>
+      {% endif %}
+
+      <form action="/register" method="POST">
+        <!-- 1. Full Name -->
+        <div class="form-group">
+          <label class="form-label" for="full_name">Full Name</label>
+          <div class="input-wrapper">
+            <span class="input-icon-left">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+            </span>
+            <input 
+              type="text" 
+              id="full_name" 
+              name="full_name" 
+              class="form-input" 
+              placeholder="e.g. Alex Mercer" 
+              required 
+              value="{{ full_name or '' }}"
+              autocomplete="name"
+            >
+          </div>
+        </div>
+
+        <!-- 2. Email Address -->
+        <div class="form-group">
+          <label class="form-label" for="email">Email Address</label>
+          <div class="input-wrapper">
+            <span class="input-icon-left">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect width="20" height="16" x="2" y="4" rx="2"/>
+                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+              </svg>
+            </span>
+            <input 
+              type="email" 
+              id="email" 
+              name="email" 
+              class="form-input" 
+              placeholder="e.g. citizen@civicfix.gov" 
+              required 
+              value="{{ email or '' }}"
+              autocomplete="email"
+            >
+          </div>
+        </div>
+
+        <!-- 3. Locality / Municipal Area -->
+        <div class="form-group">
+          <label class="form-label" for="locality">Locality / Municipal Area / Ward</label>
+          <div class="input-wrapper">
+            <span class="input-icon-left">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
+                <circle cx="12" cy="10" r="3"/>
+              </svg>
+            </span>
+            <input 
+              type="text" 
+              id="locality" 
+              name="locality" 
+              class="form-input" 
+              placeholder="e.g. Jubilee Hills, Ward 12 or Indiranagar" 
+              required 
+              value="{{ locality or '' }}"
+            >
+          </div>
+        </div>
+
+        <!-- 4. Phone Number (Optional) -->
+        <div class="form-group">
+          <label class="form-label" for="phone">Phone Number (Optional)</label>
+          <div class="input-wrapper">
+            <span class="input-icon-left">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+              </svg>
+            </span>
+            <input 
+              type="tel" 
+              id="phone" 
+              name="phone" 
+              class="form-input" 
+              placeholder="+91 98765 43210" 
+              value="{{ phone or '' }}"
+              autocomplete="tel"
+            >
+          </div>
+        </div>
+
+        <!-- 5. Password -->
+        <div class="form-group">
+          <label class="form-label" for="password">Password</label>
+          <div class="input-wrapper">
+            <span class="input-icon-left">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+            </span>
+            <input 
+              type="password" 
+              id="password" 
+              name="password" 
+              class="form-input" 
+              placeholder="Minimum 6 characters" 
+              required 
+              minlength="6"
+              autocomplete="new-password"
+            >
+          </div>
+        </div>
+
+        <!-- 6. Confirm Password -->
+        <div class="form-group">
+          <label class="form-label" for="confirm_password">Confirm Password</label>
+          <div class="input-wrapper">
+            <span class="input-icon-left">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+            </span>
+            <input 
+              type="password" 
+              id="confirm_password" 
+              name="confirm_password" 
+              class="form-input" 
+              placeholder="Repeat your password" 
+              required 
+              minlength="6"
+              autocomplete="new-password"
+            >
+          </div>
+        </div>
+
+        <div class="role-notice">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+          </svg>
+          <span>Public registration creates a <strong>Citizen Account</strong> assigned to your selected locality.</span>
+        </div>
+
+        <button type="submit" class="btn-submit">
+          <span>Complete Citizen Registration</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="5" y1="12" x2="19" y2="12"/>
+            <polyline points="12 5 19 12 12 19"/>
+          </svg>
+        </button>
+      </form>
+
+      <div class="card-footer-text">
+        Already have an account? <a href="/login">Sign In</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

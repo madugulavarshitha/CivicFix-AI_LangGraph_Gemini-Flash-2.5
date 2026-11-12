@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+
+{% block title %}Complaint Management — CivicFix AI{% endblock %}
+
+{% block content %}
+<div style="display: flex; flex-direction: column; gap: 20px;">
+  <!-- Header -->
+  <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
+    <div>
+      <span style="font-size: 0.72rem; font-weight: 700; color: var(--primary-btn); text-transform: uppercase; letter-spacing: 0.5px;">
+        Municipal Operations
+      </span>
+      <h1 style="font-size: 1.6rem; font-weight: 800; color: var(--primary-text); margin-top: 4px;">
+        Complaint Management
+      </h1>
+      <p style="font-size: 0.8rem; color: var(--secondary-text); margin-top: 4px;">
+        Search, assign departments, calibrate priorities, update statuses, and review AI triage outputs.
+      </p>
+    </div>
+  </div>
+
+  <!-- Search & Filters (Pure HTML GET form) -->
+  <div class="card" style="padding: 16px;">
+    <form action="/admin/complaints" method="GET" style="display: flex; flex-direction: column; gap: 12px;">
+      <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <input type="text" name="search" class="form-control" placeholder="Search by ID, title, citizen, or location..." value="{{ search or '' }}" style="flex: 1; min-width: 250px;">
+        
+        <button type="submit" class="btn btn-primary" style="padding: 8px 18px;">
+          Search Records
+        </button>
+        {% if search or status or category or department_id or priority %}
+          <a href="/admin/complaints" class="btn btn-outline" style="padding: 8px 14px; color: var(--error);">Reset Filters</a>
+        {% endif %}
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px;">
+        <select name="status" class="form-control">
+          <option value="">All Statuses</option>
+          <option value="Submitted" {% if status == 'Submitted' %}selected{% endif %}>Submitted</option>
+          <option value="AI Analysis" {% if status == 'AI Analysis' %}selected{% endif %}>AI Analysis</option>
+          <option value="Assigned" {% if status == 'Assigned' %}selected{% endif %}>Assigned</option>
+          <option value="In Progress" {% if status == 'In Progress' %}selected{% endif %}>In Progress</option>
+          <option value="Resolved" {% if status == 'Resolved' %}selected{% endif %}>Resolved</option>
+          <option value="Verified" {% if status == 'Verified' %}selected{% endif %}>Verified</option>
+          <option value="Closed" {% if status == 'Closed' %}selected{% endif %}>Closed</option>
+          <option value="Reopened" {% if status == 'Reopened' %}selected{% endif %}>Reopened</option>
+          <option value="Rejected" {% if status == 'Rejected' %}selected{% endif %}>Rejected</option>
+        </select>
+
+        <select name="category" class="form-control">
+          <option value="">All Categories</option>
+          <option value="Road Damage" {% if category == 'Road Damage' %}selected{% endif %}>Road Damage</option>
+          <option value="Garbage and Sanitation" {% if category == 'Garbage and Sanitation' %}selected{% endif %}>Garbage & Sanitation</option>
+          <option value="Streetlight Failure" {% if category == 'Streetlight Failure' %}selected{% endif %}>Streetlight Failure</option>
+          <option value="Water Leakage" {% if category == 'Water Leakage' %}selected{% endif %}>Water Leakage</option>
+          <option value="Drainage and Sewage" {% if category == 'Drainage and Sewage' %}selected{% endif %}>Drainage & Sewage</option>
+          <option value="Public Safety" {% if category == 'Public Safety' %}selected{% endif %}>Public Safety</option>
+          <option value="Other" {% if category == 'Other' %}selected{% endif %}>Other</option>
+        </select>
+
+        <select name="department_id" class="form-control">
+          <option value="">All Departments</option>
+          {% for d in departments %}
+            <option value="{{ d.id }}" {% if department_id == d.id|string %}selected{% endif %}>{{ d.name }}</option>
+          {% endfor %}
+        </select>
+
+        <select name="priority" class="form-control">
+          <option value="">All Priorities</option>
+          <option value="Critical" {% if priority == 'Critical' %}selected{% endif %}>Critical</option>
+          <option value="High" {% if priority == 'High' %}selected{% endif %}>High</option>
+          <option value="Medium" {% if priority == 'Medium' %}selected{% endif %}>Medium</option>
+          <option value="Low" {% if priority == 'Low' %}selected{% endif %}>Low</option>
+        </select>
+      </div>
+    </form>
+  </div>
+
+  <!-- Complaints Table -->
+  <div class="card" style="padding: 0; overflow: visible;">
+    {% if complaints and complaints|length > 0 %}
+      <div class="table-responsive" style="border: none; overflow: visible;">
+        <table class="table" style="overflow: visible;">
+          <thead>
+            <tr>
+              <th>Ref ID</th>
+              <th>Title & Location</th>
+              <th>Category</th>
+              <th>Citizen</th>
+              <th>Assigned Dept</th>
+              <th>Priority</th>
+              <th>Status</th>
+              <th style="text-align: right;">Officer Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for c in complaints %}
+            <tr>
+              <td style="font-weight: 700; color: var(--primary-btn); white-space: nowrap;">
+                {{ c.reference_number }}
+                {% if c.is_potential_duplicate %}
+                  <span style="display: block; font-size: 0.65rem; background: #FDE68A; color: #92400E; padding: 1px 6px; border-radius: 4px; font-weight: 700; width: fit-content; margin-top: 2px;">
+                    Duplicate
+                  </span>
+                {% endif %}
+              </td>
+              <td>
+                <div style="font-weight: 600; color: var(--primary-text); max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                  {{ c.title }}
+                </div>
+                <div style="font-size: 0.72rem; color: var(--secondary-text); max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                  {{ c.location }}
+                </div>
+              </td>
+              <td style="white-space: nowrap;">{{ c.category }}</td>
+              <td style="color: var(--secondary-text); font-size: 0.78rem; white-space: nowrap;">
+                {{ c.citizen.full_name }}
+              </td>
+              <td style="white-space: nowrap;">
+                {% if c.assigned_department %}
+                  <span style="font-weight: 600; color: var(--primary-text);">{{ c.assigned_department.name }}</span>
+                {% else %}
+                  <span style="color: var(--warning); font-weight: 700;">Unassigned</span>
+                {% endif %}
+              </td>
+              <td style="white-space: nowrap;">
+                {% if c.priority == 'Critical' %}
+                  <span class="badge badge-critical">Critical</span>
+                {% elif c.priority == 'High' %}
+                  <span class="badge badge-high">High</span>
+                {% elif c.priority == 'Medium' %}
+                  <span class="badge badge-medium">Medium</span>
+                {% else %}
+                  <span class="badge badge-low">Low</span>
+                {% endif %}
+              </td>
+              <td style="white-space: nowrap;">
+                <span class="badge badge-{{ c.status|lower|replace(' ', '-') }}">{{ c.status }}</span>
+              </td>
+              <td style="text-align: right; white-space: nowrap;">
+                <div style="display: inline-flex; align-items: center; gap: 6px;">
+                  <a href="/admin/complaints/{{ c.id }}" class="btn btn-outline btn-sm" title="View details">
+                    Inspect
+                  </a>
+
+                  <!-- Action dropdown using pure HTML <details> -->
+                  <details style="position: relative; display: inline-block;">
+                    <summary class="btn btn-primary btn-sm" style="list-style: none; cursor: pointer; padding: 6px 8px;">
+                      ⚙️ Actions
+                    </summary>
+                    <div style="position: absolute; right: 0; top: 32px; width: 280px; background: #FFFFFF; border: 1px solid var(--border-color); border-radius: 12px; padding: 14px; box-shadow: var(--shadow-hover); z-index: 100; text-align: left;">
+                      <!-- Assign Department Form -->
+                      <form action="/admin/complaints/{{ c.id }}/assign" method="POST" style="margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--border-color);">
+                        <label class="form-label" style="font-size: 0.72rem;">Reassign Department:</label>
+                        <select name="department_id" class="form-control" style="font-size: 0.75rem; padding: 6px;">
+                          {% for d in departments %}
+                            <option value="{{ d.id }}" {% if c.assigned_department_id == d.id %}selected{% endif %}>{{ d.name }}</option>
+                          {% endfor %}
+                        </select>
+                        <button type="submit" class="btn btn-outline btn-sm" style="width: 100%; margin-top: 6px; font-size: 0.72rem;">Assign Dept</button>
+                      </form>
+
+                      <!-- Update Priority Form -->
+                      <form action="/admin/complaints/{{ c.id }}/priority" method="POST" style="margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--border-color);">
+                        <label class="form-label" style="font-size: 0.72rem;">Set Priority:</label>
+                        <select name="priority" class="form-control" style="font-size: 0.75rem; padding: 6px;">
+                          <option value="Critical" {% if c.priority == 'Critical' %}selected{% endif %}>Critical (12h SLA)</option>
+                          <option value="High" {% if c.priority == 'High' %}selected{% endif %}>High (24h SLA)</option>
+                          <option value="Medium" {% if c.priority == 'Medium' %}selected{% endif %}>Medium (48h SLA)</option>
+                          <option value="Low" {% if c.priority == 'Low' %}selected{% endif %}>Low (72h SLA)</option>
+                        </select>
+                        <button type="submit" class="btn btn-warning btn-sm" style="width: 100%; margin-top: 6px; font-size: 0.72rem;">Update Priority</button>
+                      </form>
+
+                      <!-- Update Status Form -->
+                      <form action="/admin/complaints/{{ c.id }}/status" method="POST">
+                        <label class="form-label" style="font-size: 0.72rem;">Update Status:</label>
+                        <select name="status" class="form-control" style="font-size: 0.75rem; padding: 6px;">
+                          <option value="In Progress">In Progress</option>
+                          <option value="Resolved">Resolved</option>
+                          <option value="Verified">Verified</option>
+                          <option value="Closed">Closed</option>
+                          <option value="Rejected">Rejected</option>
+                        </select>
+                        <input type="text" name="reason" class="form-control" placeholder="Action note..." style="font-size: 0.75rem; margin-top: 4px; padding: 6px;">
+                        <button type="submit" class="btn btn-success btn-sm" style="width: 100%; margin-top: 6px; font-size: 0.72rem;">Update Status</button>
+                      </form>
+                    </div>
+                  </details>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div style="text-align: center; padding: 48px 20px;">
+        <h3 style="font-size: 1rem; font-weight: 700; color: var(--primary-text);">No complaints match the specified filters</h3>
+        <p style="font-size: 0.8rem; color: var(--secondary-text); margin-top: 4px;">Try clearing filters or search keywords.</p>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

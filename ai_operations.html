@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+
+{% block title %}AI Operations Center — CivicFix AI{% endblock %}
+
+{% block content %}
+<div style="display: flex; flex-direction: column; gap: 24px;">
+  <!-- Header -->
+  <div class="card" style="background: linear-gradient(135deg, #FFFFFF, #F8FAFC 60%, rgba(217, 204, 255, 0.25));">
+    <div style="display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 0.75rem; color: var(--primary-btn); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg>
+      Multi-Agent LangGraph Architecture
+    </div>
+    <h1 style="font-size: 1.6rem; font-weight: 800; color: var(--primary-text);">
+      AI Operations Center
+    </h1>
+    <p style="font-size: 0.8rem; color: var(--secondary-text); margin-top: 4px; max-width: 650px;">
+      Real-time health, execution traces, and performance telemetry for the 5 autonomous municipal agents. All metrics are computed directly from database execution logs.
+    </p>
+  </div>
+
+  <!-- Pure HTML/CSS Visual Workflow Diagram -->
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <h2 class="card-title">End-to-End Autonomous Workflow Diagram</h2>
+        <p class="card-subtitle">Directed pipeline with human-in-the-loop review</p>
+      </div>
+      <span class="badge" style="background-color: var(--pastel-mint); color: #065F46; font-size: 0.75rem; font-weight: 700;">
+        LangGraph Orchestration Active
+      </span>
+    </div>
+
+    <!-- Responsive Step Flow (Pure HTML/CSS) -->
+    <div style="background-color: #F8FAFC; border: 1px solid var(--border-color); border-radius: 14px; padding: 18px; overflow-x: auto;">
+      <div style="display: flex; align-items: center; justify-content: space-between; min-width: 820px; gap: 8px;">
+        <div style="background: #FFFFFF; border: 1px solid var(--border-color); padding: 10px 14px; border-radius: 12px; text-align: center; flex: 1;">
+          <div style="font-size: 0.65rem; font-weight: 700; color: var(--secondary-text); text-transform: uppercase;">1. Input</div>
+          <strong style="font-size: 0.78rem; color: var(--primary-text); display: block; margin-top: 2px;">Citizen Report</strong>
+        </div>
+        <span style="color: var(--secondary-text); font-weight: 700;">→</span>
+
+        <div style="background: var(--pastel-blue); border: 1px solid #93C5FD; padding: 10px 14px; border-radius: 12px; text-align: center; flex: 1;">
+          <div style="font-size: 0.65rem; font-weight: 700; color: #1E40AF; text-transform: uppercase;">Agent 1</div>
+          <strong style="font-size: 0.78rem; color: #1E40AF; display: block; margin-top: 2px;">Classifier</strong>
+        </div>
+        <span style="color: var(--secondary-text); font-weight: 700;">→</span>
+
+        <div style="background: var(--pastel-lavender); border: 1px solid #C4B5FD; padding: 10px 14px; border-radius: 12px; text-align: center; flex: 1;">
+          <div style="font-size: 0.65rem; font-weight: 700; color: #4338CA; text-transform: uppercase;">Agent 2</div>
+          <strong style="font-size: 0.78rem; color: #4338CA; display: block; margin-top: 2px;">Duplicate Detector</strong>
+        </div>
+        <span style="color: var(--secondary-text); font-weight: 700;">→</span>
+
+        <div style="background: var(--pastel-blue); border: 1px solid #93C5FD; padding: 10px 14px; border-radius: 12px; text-align: center; flex: 1;">
+          <div style="font-size: 0.65rem; font-weight: 700; color: #1E40AF; text-transform: uppercase;">Agent 3</div>
+          <strong style="font-size: 0.78rem; color: #1E40AF; display: block; margin-top: 2px;">Dept Router</strong>
+        </div>
+        <span style="color: var(--secondary-text); font-weight: 700;">→</span>
+
+        <div style="background: var(--pastel-peach); border: 1px solid #FDBA74; padding: 10px 14px; border-radius: 12px; text-align: center; flex: 1;">
+          <div style="font-size: 0.65rem; font-weight: 700; color: #9A3412; text-transform: uppercase;">Agent 4</div>
+          <strong style="font-size: 0.78rem; color: #9A3412; display: block; margin-top: 2px;">Priority Assessor</strong>
+        </div>
+        <span style="color: var(--secondary-text); font-weight: 700;">→</span>
+
+        <div style="background: var(--pastel-yellow); border: 1px solid #FDE047; padding: 10px 14px; border-radius: 12px; text-align: center; flex: 1;">
+          <div style="font-size: 0.65rem; font-weight: 700; color: #854D0E; text-transform: uppercase;">Field Officer</div>
+          <strong style="font-size: 0.78rem; color: #854D0E; display: block; margin-top: 2px;">Action & Photo</strong>
+        </div>
+        <span style="color: var(--secondary-text); font-weight: 700;">→</span>
+
+        <div style="background: var(--pastel-mint); border: 1px solid #86EFAC; padding: 10px 14px; border-radius: 12px; text-align: center; flex: 1;">
+          <div style="font-size: 0.65rem; font-weight: 700; color: #065F46; text-transform: uppercase;">Agent 5</div>
+          <strong style="font-size: 0.78rem; color: #065F46; display: block; margin-top: 2px;">Resolution Verifier</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Five Distinct Agent Cards (Calculated from Real Database Executions) -->
+  <div>
+    <h2 style="font-size: 0.85rem; font-weight: 700; text-transform: uppercase; color: var(--primary-text); margin-bottom: 14px; letter-spacing: 0.5px;">
+      Active Autonomous Agents ({{ agents|length }})
+    </h2>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px;">
+      {% for ag in agents %}
+      <div class="card" style="margin-bottom: 0; display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <div style="width: 38px; height: 38px; border-radius: 12px; background-color: var(--pastel-lavender); color: #4338CA; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.95rem;">
+              {{ ag.agent_name[0] }}
+            </div>
+            <span class="badge" style="background-color: var(--pastel-mint); color: #065F46;">
+              {{ ag.status }}
+            </span>
+          </div>
+
+          <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--primary-text);">
+            {{ ag.agent_name }}
+          </h3>
+          <p style="font-size: 0.75rem; color: var(--secondary-text); margin-top: 4px; line-height: 1.4;">
+            {{ ag.purpose }}
+          </p>
+        </div>
+
+        <!-- Telemetry Counts -->
+        <div style="margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border-color);">
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; text-align: center; margin-bottom: 12px;">
+            <div style="background-color: #F8FAFC; padding: 8px; border-radius: 8px;">
+              <span style="font-size: 0.65rem; color: var(--secondary-text); display: block;">Processed</span>
+              <strong style="font-size: 0.9rem; color: var(--primary-text);">{{ ag.processed_count }}</strong>
+            </div>
+            <div style="background-color: #E6F8F0; padding: 8px; border-radius: 8px;">
+              <span style="font-size: 0.65rem; color: #065F46; display: block;">Success</span>
+              <strong style="font-size: 0.9rem; color: #065F46;">{{ ag.success_count }}</strong>
+            </div>
+            <div style="background-color: #FEE2E2; padding: 8px; border-radius: 8px;">
+              <span style="font-size: 0.65rem; color: #991B1B; display: block;">Failed</span>
+              <strong style="font-size: 0.9rem; color: #991B1B;">{{ ag.failed_count }}</strong>
+            </div>
+          </div>
+
+          <!-- Latest Output Summary -->
+          <div style="background-color: #F8FAFC; border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; font-size: 0.72rem;">
+            <span style="font-weight: 700; color: var(--primary-text); display: block; margin-bottom: 2px;">Latest Output:</span>
+            <div style="color: var(--secondary-text); font-family: monospace; font-size: 0.68rem; word-break: break-all;">
+              {{ ag.latest_output_summary }}
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Complaint Trace Inspector -->
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <h2 class="card-title">Complaint Agent Execution Trace Inspector</h2>
+        <p class="card-subtitle">Inspect chronological agent decisions, timestamps, and confidence scores</p>
+      </div>
+
+      <!-- Select Complaint to Inspect (Pure HTML GET form) -->
+      <form action="/admin/ai-operations" method="GET" style="display: flex; gap: 8px;">
+        <select name="inspect_id" class="form-control" style="font-size: 0.78rem; padding: 6px 12px; width: 260px;">
+          {% for c in recent_complaints %}
+            <option value="{{ c.id }}" {% if selected_complaint and selected_complaint.id == c.id %}selected{% endif %}>
+              {{ c.reference_number }}: {{ c.title[:25] }}...
+            </option>
+          {% endfor %}
+        </select>
+        <button type="submit" class="btn btn-outline btn-sm">Inspect</button>
+      </form>
+    </div>
+
+    {% if selected_trace and selected_trace|length > 0 %}
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        {% for tr in selected_trace %}
+        <div style="padding: 14px; background-color: #F8FAFC; border: 1px solid var(--border-color); border-radius: 12px; font-size: 0.8rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="width: 22px; height: 22px; border-radius: 50%; background-color: var(--pastel-blue); color: #1E40AF; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.72rem;">
+                {{ loop.index }}
+              </span>
+              <strong style="color: var(--primary-text); font-size: 0.85rem;">{{ tr.agent_name }}</strong>
+              <span class="badge badge-verified" style="font-size: 0.65rem;">{{ tr.status }}</span>
+            </div>
+            <span style="font-size: 0.72rem; color: var(--secondary-text);">
+              {{ tr.started_at.strftime('%I:%M:%S %p') }}
+            </span>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-family: monospace; font-size: 0.72rem; margin-top: 6px;">
+            <div style="background: #FFFFFF; border: 1px solid var(--border-color); border-radius: 8px; padding: 10px;">
+              <strong style="font-family: 'Inter', sans-serif; color: var(--primary-text); display: block; margin-bottom: 4px;">Input:</strong>
+              <span style="color: var(--secondary-text);">{{ tr.input_summary }}</span>
+            </div>
+            <div style="background: #FFFFFF; border: 1px solid var(--border-color); border-radius: 8px; padding: 10px;">
+              <strong style="font-family: 'Inter', sans-serif; color: var(--primary-text); display: block; margin-bottom: 4px;">Output:</strong>
+              <span style="color: var(--secondary-text); word-break: break-all;">{{ tr.output_summary }}</span>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p style="text-align: center; color: var(--secondary-text); padding: 24px 0; font-size: 0.8rem;">
+        No recorded execution traces found for this complaint.
+      </p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}My Reported Issues — CivicFix AI{% endblock %}
+
+{% block content %}
+<div style="display: flex; flex-direction: column; gap: 20px;">
+  <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
+    <div>
+      <span style="font-size: 0.72rem; font-weight: 700; color: var(--primary-btn); text-transform: uppercase; letter-spacing: 0.5px;">
+        Citizen Activity
+      </span>
+      <h1 style="font-size: 1.6rem; font-weight: 800; color: var(--primary-text); margin-top: 4px;">
+        My Reported Complaints
+      </h1>
+      <p style="font-size: 0.8rem; color: var(--secondary-text); margin-top: 4px;">
+        Review your complete history of submitted civic grievances and current resolution progress.
+      </p>
+    </div>
+    <a href="/complaints/new" class="btn btn-primary" style="padding: 10px 18px;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+      Report New Issue
+    </a>
+  </div>
+
+  <!-- Search & Filter Form (Pure HTML GET form) -->
+  <div class="card" style="padding: 16px;">
+    <form action="/complaints" method="GET" style="display: flex; gap: 12px; flex-wrap: wrap;">
+      <div style="flex: 1; min-width: 240px;">
+        <input type="text" name="search" class="form-control" placeholder="Search by title, reference number, or location..." value="{{ search or '' }}">
+      </div>
+
+      <div style="width: 180px;">
+        <select name="status" class="form-control">
+          <option value="">All Statuses</option>
+          <option value="Submitted" {% if status == 'Submitted' %}selected{% endif %}>Submitted</option>
+          <option value="AI Analysis" {% if status == 'AI Analysis' %}selected{% endif %}>AI Analysis</option>
+          <option value="Assigned" {% if status == 'Assigned' %}selected{% endif %}>Assigned</option>
+          <option value="In Progress" {% if status == 'In Progress' %}selected{% endif %}>In Progress</option>
+          <option value="Resolved" {% if status == 'Resolved' %}selected{% endif %}>Resolved</option>
+          <option value="Verified" {% if status == 'Verified' %}selected{% endif %}>Verified</option>
+          <option value="Closed" {% if status == 'Closed' %}selected{% endif %}>Closed</option>
+          <option value="Reopened" {% if status == 'Reopened' %}selected{% endif %}>Reopened</option>
+          <option value="Rejected" {% if status == 'Rejected' %}selected{% endif %}>Rejected</option>
+        </select>
+      </div>
+
+      <button type="submit" class="btn btn-outline" style="padding: 8px 16px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        Filter
+      </button>
+
+      {% if search or status %}
+        <a href="/complaints" class="btn btn-outline" style="padding: 8px 12px; color: var(--error);">Clear</a>
+      {% endif %}
+    </form>
+  </div>
+
+  <!-- Complaints Table -->
+  <div class="card" style="padding: 0; overflow: hidden;">
+    {% if complaints and complaints|length > 0 %}
+      <div class="table-responsive" style="border: none;">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Reference ID</th>
+              <th>Title & Area</th>
+              <th>Category</th>
+              <th>Department</th>
+              <th>Priority</th>
+              <th>Status</th>
+              <th style="text-align: right;">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for c in complaints %}
+            <tr>
+              <td style="font-weight: 700; color: var(--primary-btn);">{{ c.reference_number }}</td>
+              <td>
+                <div style="font-weight: 600; color: var(--primary-text);">{{ c.title }}</div>
+                <div style="font-size: 0.72rem; color: var(--secondary-text); margin-top: 2px;">{{ c.location }}</div>
+              </td>
+              <td>{{ c.category }}</td>
+              <td style="color: var(--secondary-text); font-weight: 500;">
+                {% if c.assigned_department %}{{ c.assigned_department.name }}{% else %}Pending{% endif %}
+              </td>
+              <td>
+                {% if c.priority == 'Critical' %}
+                  <span class="badge badge-critical">Critical</span>
+                {% elif c.priority == 'High' %}
+                  <span class="badge badge-high">High</span>
+                {% elif c.priority == 'Medium' %}
+                  <span class="badge badge-medium">Medium</span>
+                {% else %}
+                  <span class="badge badge-low">Low</span>
+                {% endif %}
+              </td>
+              <td>
+                <span class="badge badge-{{ c.status|lower|replace(' ', '-') }}">{{ c.status }}</span>
+              </td>
+              <td style="text-align: right;">
+                <a href="/complaints/{{ c.id }}" class="btn btn-outline btn-sm">
+                  Track
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div style="text-align: center; padding: 48px 20px;">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" stroke-width="1.5" style="margin-bottom: 12px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <h3 style="font-size: 1rem; font-weight: 700; color: var(--primary-text);">No matching complaints found</h3>
+        <p style="font-size: 0.8rem; color: var(--secondary-text); margin-top: 4px;">
+          Try adjusting your search terms or report a new issue.
+        </p>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
